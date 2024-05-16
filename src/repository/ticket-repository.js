@@ -32,6 +32,7 @@ class TicketRepository {
                     }
                 }
             });
+            
             return tickets;
         } catch (error) {
             throw error;
