@@ -1,11 +1,10 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 
-const { PORT } = require('./config/serverConfig');
-
-const {sendBasicEmail} = require('./services/email-service');
+const { PORT, REMINDER_BINDING_KEY } = require('./config/serverConfig');
 const { TicketController } = require('./controllers/index');
-
+const { createChannel, subscribeMessage } = require('./utils/messageQueue');
+const { EmailService } = require('./services/index');
 const setupJobs = require('./utils/job');
 
 const setupAndStartServer = async function () {
@@ -18,15 +17,13 @@ const setupAndStartServer = async function () {
             
             app.post('/api/v1/tickets',TicketController.create);
             await setupJobs();
-        });
-        // sendBasicEmail(
-        //     'support@admin.com',
-        //     'sahibahmed998@gmail.com',
-        //     'test',
-        //     'hey test'
-        // )
 
-    } catch (error) {
+            const channel = await createChannel();
+            subscribeMessage(channel,EmailService.subscribeEvents, REMINDER_BINDING_KEY);
+            
+        });
+
+            } catch (error) {
         console.error('Error setting up and starting the server:', error);
     }
 };

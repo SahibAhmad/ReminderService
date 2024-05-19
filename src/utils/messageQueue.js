@@ -30,9 +30,11 @@ const subscribeMessage = async (channel,service,binding_key) => {
 
         channel.bindQueue(applicationQueue.queue, EXCHANGE_NAME, binding_key);
 
-        channel.consume(applicationQueue.queue, msg=> {
+        channel.consume(applicationQueue.queue, async msg=> {
             console.log('Recieved data! ');
-            console.log(msg.content.toString());
+            // console.log(msg.content.toString());
+            const payload = JSON.parse(msg.content.toString());
+            await service(payload);
             channel.ack(msg); //otherwise we may not clear the service 
 
         } );
@@ -42,6 +44,7 @@ const subscribeMessage = async (channel,service,binding_key) => {
 }
 
 module.exports = {
+    publishMessage,
     subscribeMessage,
     createChannel,
 }
